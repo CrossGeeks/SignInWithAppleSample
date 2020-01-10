@@ -8,11 +8,19 @@ namespace SignInWithAppleSample
 {
     public partial class App : Application
     {
+        string userId;
         public App()
         {
             InitializeComponent();
-
-            MainPage = new MainPage();
+            if(Preferences.Get("LoggedIn",false))
+            {
+                MainPage = new MainPage();
+            }
+            else
+            {
+                MainPage = new LoginPage();
+            }
+            
         }
 
         protected override async void OnStart()
@@ -22,9 +30,10 @@ namespace SignInWithAppleSample
             //if (string.IsNullOrEmpty(Settings.Token) || string.IsNullOrEmpty(Settings.AppleExternalAccount)) return;
 
             var appleSignInService = DependencyService.Get<IAppleSignInService>();
-            if(appleSignInService.IsAvailable)
+            userId = await SecureStorage.GetAsync("AppleUserIdKey");
+            if (appleSignInService.IsAvailable && !string.IsNullOrEmpty(userId))
             {
-                var userId= await SecureStorage.GetAsync("AppleUserIdKey");
+                
                 var credentialState = await appleSignInService.GetCredentialStateAsync(userId);
 
                 switch (credentialState)
@@ -35,6 +44,9 @@ namespace SignInWithAppleSample
                     case AppleSignInCredentialState.NotFound:
                     case AppleSignInCredentialState.Revoked:
                         //Logout;
+                        SecureStorage.Remove("AppleUserIdKey");
+                        Preferences.Set("LoggedIn", false);
+                        MainPage = new LoginPage();
                         break;
                 }
             }

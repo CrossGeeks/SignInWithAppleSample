@@ -12,9 +12,6 @@ namespace SignInWithAppleSample.iOS.Services
 {
     public class AppleSignInService: NSObject, IAppleSignInService,IASAuthorizationControllerDelegate, IASAuthorizationControllerPresentationContextProviding
     {
-        public Task<ASAuthorizationAppleIdCredential> Credentials
-            => tcsCredential?.Task;
-
         public bool IsAvailable => UIDevice.CurrentDevice.CheckSystemVersion(13, 0);
 
         TaskCompletionSource<ASAuthorizationAppleIdCredential> tcsCredential;
@@ -53,7 +50,7 @@ namespace SignInWithAppleSample.iOS.Services
 
             tcsCredential = new TaskCompletionSource<ASAuthorizationAppleIdCredential>();
 
-            var creds = await Credentials;
+            var creds = await tcsCredential.Task;
 
             if (creds == null)
                 return null;
@@ -81,6 +78,7 @@ namespace SignInWithAppleSample.iOS.Services
         public void DidComplete(ASAuthorizationController controller, NSError error)
         {
             // Handle error
+            tcsCredential?.TrySetResult(null);
             Console.WriteLine(error);
         }
 
@@ -90,13 +88,7 @@ namespace SignInWithAppleSample.iOS.Services
 
         public UIWindow GetPresentationAnchor(ASAuthorizationController controller)
         {
-            var window = UIApplication.SharedApplication.KeyWindow;
-            var vc = window.RootViewController;
-            while (vc.PresentedViewController != null)
-            {
-                vc = vc.PresentedViewController;
-            }
-            return vc.View.Window;
+            return UIApplication.SharedApplication.KeyWindow;
         }
 
         #endregion
