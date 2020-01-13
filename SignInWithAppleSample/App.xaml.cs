@@ -8,11 +8,13 @@ namespace SignInWithAppleSample
 {
     public partial class App : Application
     {
+        public const string LoggedInKey = "LoggedIn";
+        public const string AppleUserIdKey = "AppleUserIdKey";
         string userId;
         public App()
         {
             InitializeComponent();
-            if(Preferences.Get("LoggedIn",false))
+            if(Preferences.Get(LoggedInKey, false))
             {
                 MainPage = new MainPage();
             }
@@ -25,31 +27,31 @@ namespace SignInWithAppleSample
 
         protected override async void OnStart()
         {
-            // Handle when your app starts
-
-            //if (string.IsNullOrEmpty(Settings.Token) || string.IsNullOrEmpty(Settings.AppleExternalAccount)) return;
-
             var appleSignInService = DependencyService.Get<IAppleSignInService>();
-            userId = await SecureStorage.GetAsync("AppleUserIdKey");
-            if (appleSignInService.IsAvailable && !string.IsNullOrEmpty(userId))
+            if(appleSignInService!=null)
             {
-                
-                var credentialState = await appleSignInService.GetCredentialStateAsync(userId);
-
-                switch (credentialState)
+                userId = await SecureStorage.GetAsync(AppleUserIdKey);
+                if (appleSignInService.IsAvailable && !string.IsNullOrEmpty(userId))
                 {
-                    case AppleSignInCredentialState.Authorized:
-                        //Normal app workflow...
-                        break;
-                    case AppleSignInCredentialState.NotFound:
-                    case AppleSignInCredentialState.Revoked:
-                        //Logout;
-                        SecureStorage.Remove("AppleUserIdKey");
-                        Preferences.Set("LoggedIn", false);
-                        MainPage = new LoginPage();
-                        break;
+
+                    var credentialState = await appleSignInService.GetCredentialStateAsync(userId);
+
+                    switch (credentialState)
+                    {
+                        case AppleSignInCredentialState.Authorized:
+                            //Normal app workflow...
+                            break;
+                        case AppleSignInCredentialState.NotFound:
+                        case AppleSignInCredentialState.Revoked:
+                            //Logout;
+                            SecureStorage.Remove(AppleUserIdKey);
+                            Preferences.Set(LoggedInKey, false);
+                            MainPage = new LoginPage();
+                            break;
+                    }
                 }
             }
+            
             
         }
 

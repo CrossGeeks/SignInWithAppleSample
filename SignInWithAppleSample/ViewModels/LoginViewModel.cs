@@ -26,8 +26,8 @@ namespace SignInWithAppleSample.ViewModels
             var account = await appleSignInService.SignInAsync();
             if (account != null)
             {
-                Preferences.Set("LoggedIn", true);
-                await SecureStorage.SetAsync("AppleUserIdKey", account.UserId);
+                Preferences.Set(App.LoggedInKey, true);
+                await SecureStorage.SetAsync(App.AppleUserIdKey, account.UserId);
                 System.Diagnostics.Debug.WriteLine($"Signed in!\n  Name: {account?.Name ?? string.Empty}\n  Email: {account?.Email ?? string.Empty}\n  UserId: {account?.UserId ?? string.Empty}");
                 OnSignIn?.Invoke(this,default(EventArgs));
             }
