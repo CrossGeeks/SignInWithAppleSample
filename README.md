@@ -1,7 +1,7 @@
 # Sign In With Apple Sample
 
 <p align="center">
-<img  height:"1000" src="applesignin.gif" />
+<img  height:"1000" src="apple-sign-in.gif" />
 </p>
 
 
